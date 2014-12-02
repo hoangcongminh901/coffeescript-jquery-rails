@@ -2,23 +2,50 @@
 (function() {
   var TodoApp;
 
+  Storage.prototype.setObj = function(key, obj) {
+    return this.setItem(key, JSON.stringify(obj));
+  };
+
+  Storage.prototype.getObj = function(key) {
+    return JSON.parse(this.getItem(key));
+  };
+
   TodoApp = (function() {
     function TodoApp() {
+      this.cacheElements();
       this.bindEvents();
     }
 
+    TodoApp.prototype.cacheElements = function() {
+      return this.$input = $("#new-todo");
+    };
+
     TodoApp.prototype.bindEvents = function() {
-      return $("#new-todo").on("keyup", this.create);
+      return this.$input.on("keyup", (function(_this) {
+        return function(e) {
+          return _this.create(e);
+        };
+      })(this));
+    };
+
+    TodoApp.prototype.displayItems = function() {
+      return alert('displaying items');
     };
 
     TodoApp.prototype.create = function(e) {
-      var $input, val;
-      $input = $(this);
-      val = $.trim($input.val());
+      var randomId, val;
+      val = $.trim(this.$input.val());
       if (!(e.which === 13 && val)) {
         return;
       }
-      return alert(val);
+      randomId = Math.floor(Math.random() * 999999);
+      localStorage.setObj(randomId, {
+        id: randomId,
+        title: val,
+        completed: false
+      });
+      this.$input.val("");
+      return this.displayItems();
     };
 
     return TodoApp;
