@@ -7,15 +7,53 @@ class TodoApp
   constructor: ->
     @cacheElements()
     @bindEvents()
+    @displayItems()
 
   cacheElements: ->
     @$input = $("#new-todo")
+    @$todoList = $("#todo-list")
+    @$clearButton = $("#clear-completed")
 
   bindEvents: ->
     @$input.on "keyup", (e) => @create(e)
+    @$todoList.on "click", ".destroy", (e) => @destroy(e.target)
+    @$todoList.on "change", ".toggle", (e) => @toggle(e.target)
+    @$clearButton.on "click", (e) => @clear()
+
+  clear: ->
+    @clearItems()
+    localStorage.clear()
+
+  toggle: (e) ->
+    id = $(e).closest("li").data "id"
+    item = localStorage.getObj id
+    item.completed = !item.completed
+    localStorage.setObj id, item
+
+  destroy: (e) ->
+    id = $(e).closest("li").data "id"
+    localStorage.removeItem id
+    @displayItems()
 
   displayItems: ->
-    alert 'displaying items'
+    @clearItems()
+    @addItem(localStorage.getObj(id)) for id in Object.keys(localStorage)
+
+  clearItems: ->
+    @$todoList.empty()
+
+  addItem: (item) ->
+    html = """
+      <li #{if item.completed then 'class="completed"' else ''} data-id="#{item.id}">
+        <div class="view">
+          <input class="toggle" type="checkbox" #{if item.completed then "checked" else ""}>
+          <label>#{item.title}</label>
+          <button class="destroy"></button>
+        </div>
+      </li>
+    """
+    @$todoList.append(html)
+
 
   create: (e)->
     val = $.trim @$input.val()
